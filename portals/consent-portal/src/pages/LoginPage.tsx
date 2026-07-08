@@ -1,38 +1,23 @@
 import { Shield } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { useAuth } from "react-oidc-context";
 import { useNavigate } from "react-router-dom";
+import SludiSignInButton from '../components/SludiSignInButton';
+import { useSludiAuth } from '../contexts/SludiAuthContext';
 
 const LoginPage: React.FC = () => {
-
   const navigate = useNavigate();
-
-  const auth = useAuth();
-  const isSignedIn = auth.isAuthenticated;
-  const isLoading = auth.isLoading;
+  const { isAuthenticated, isLoading, signIn, error } = useSludiAuth();
 
   useEffect(() => {
-    // Check if user is already signed in
-    if (!isLoading && isSignedIn) {
+    if (!isLoading && isAuthenticated) {
       const consentId = localStorage.getItem('consentId');
       if (consentId) {
-        console.log('User is signed in, redirecting to consent page');
         navigate('/');
       } else {
-        console.log('User is signed in but no consent ID found');
         navigate('/error');
       }
     }
-  }, [isSignedIn, isLoading, navigate]);
-
-  const handleSignIn = async () => {
-    try {
-      console.log('Initiating sign in...');
-      await auth.signinRedirect();
-    } catch (error) {
-      console.error('Sign in error:', error);
-    }
-  };
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
     return (
@@ -49,16 +34,14 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 relative">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
         <Shield className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Consent Portal</h1>
-        <p className="text-gray-600 mb-4">
-          You need to sign in to process your consent request.
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Consent Portal</h1>
+        <p className="text-gray-600 mb-6">
+          Sign in with SLUDI to review and approve your consent request.
         </p>
-        <button
-          onClick={handleSignIn}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          Sign In to Continue
-        </button>
+        {error && (
+          <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+        )}
+        <SludiSignInButton onClick={() => void signIn()} />
       </div>
     </div>
   );

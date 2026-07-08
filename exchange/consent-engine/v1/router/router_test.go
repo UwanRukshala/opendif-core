@@ -26,7 +26,7 @@ func TestNewV1Router(t *testing.T) {
 		t.Skipf("Failed to create JWT verifier: %v", err)
 	}
 
-	router := NewV1Router("http://localhost:5173", internalHandler, portalHandler, jwtVerifier)
+	router := NewV1Router("http://localhost:5173", internalHandler, portalHandler, handlers.NewAuthHandler(nil), jwtVerifier)
 
 	assert.NotNil(t, router)
 	assert.Equal(t, internalHandler, router.internalHandler)
@@ -49,7 +49,7 @@ func TestV1Router_RegisterRoutes(t *testing.T) {
 		t.Skipf("Failed to create JWT verifier: %v", err)
 	}
 
-	router := NewV1Router("http://localhost:5173", internalHandler, portalHandler, jwtVerifier)
+	router := NewV1Router("http://localhost:5173", internalHandler, portalHandler, handlers.NewAuthHandler(nil), jwtVerifier)
 	mux := http.NewServeMux()
 
 	router.RegisterRoutes(mux)
@@ -83,7 +83,7 @@ func TestV1Router_ApplyCORS(t *testing.T) {
 		t.Skipf("Failed to create JWT verifier: %v", err)
 	}
 
-	router := NewV1Router("http://localhost:5173", internalHandler, portalHandler, jwtVerifier)
+	router := NewV1Router("http://localhost:5173", internalHandler, portalHandler, handlers.NewAuthHandler(nil), jwtVerifier)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

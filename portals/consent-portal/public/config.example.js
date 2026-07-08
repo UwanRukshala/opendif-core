@@ -7,13 +7,13 @@ window.configs = {
     // Base URL of the Consent Engine API.
     consentEngineUrl: 'http://localhost:8081/api/v1',
 
-    // OIDC / IdP settings. Endpoints are resolved via OIDC discovery from
-    // idpBaseUrl (i.e. idpBaseUrl/.well-known/openid-configuration).
-    idpClientId: 'your_client_id',
-    idpBaseUrl: 'https://your-idp.example.com',
+    // SLUDI / eSignet OIDC settings.
+    // Discovery: idpBaseUrl/.well-known/openid-configuration
+    idpClientId: 'ndx',
+    idpBaseUrl: 'https://esignet.dev.digieconcenter.gov.lk',
     idpScope: 'openid profile email',
 
-    // OAuth2 redirect URLs (must be registered with the IdP).
-    idpSignInRedirectUrl: 'http://localhost:5173',
-    idpSignOutRedirectUrl: 'http://localhost:5173',
+    // OAuth2 redirect URLs (must be registered with eSignet for client "ndx").
+    idpSignInRedirectUrl: 'http://localhost:3002',
+    idpSignOutRedirectUrl: 'http://localhost:3002',
 };

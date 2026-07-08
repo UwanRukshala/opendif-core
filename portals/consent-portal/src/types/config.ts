@@ -3,11 +3,11 @@
 export interface AppConfig {
   // Base URL of the Consent Engine API.
   consentEngineUrl: string;
-  // OIDC / IdP settings. Endpoints are resolved via discovery from idpBaseUrl.
+  // SLUDI / eSignet OIDC settings (authorization uses eSignet UI discovery).
   idpBaseUrl: string;
   idpClientId: string;
   idpScope: string;
-  // OAuth2 redirect URLs (must be registered with the IdP).
+  // OAuth2 redirect URLs (must be registered with eSignet).
   idpSignInRedirectUrl: string;
   idpSignOutRedirectUrl: string;
 }

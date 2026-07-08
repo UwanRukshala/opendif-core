@@ -14,6 +14,7 @@ import (
 type V1Router struct {
 	internalHandler *handlers.InternalHandler
 	portalHandler   *handlers.PortalHandler
+	authHandler     *handlers.AuthHandler
 	authMiddleware  *middleware.JWTAuthMiddleware
 	corsMiddleware  func(http.Handler) http.Handler
 }
@@ -23,11 +24,13 @@ func NewV1Router(
 	allowedOrigins string,
 	internalHandler *handlers.InternalHandler,
 	portalHandler *handlers.PortalHandler,
+	authHandler *handlers.AuthHandler,
 	jwtVerifier *auth.JWTVerifier,
 ) *V1Router {
 	return &V1Router{
 		internalHandler: internalHandler,
 		portalHandler:   portalHandler,
+		authHandler:     authHandler,
 		authMiddleware:  middleware.NewJWTAuthMiddleware(jwtVerifier),
 		corsMiddleware:  middleware.NewCORSMiddleware(allowedOrigins),
 	}
@@ -57,6 +60,10 @@ func (r *V1Router) registerPortalRoutes(mux *http.ServeMux) {
 	// Health check endpoint (public - no authentication per OpenAPI spec)
 	mux.Handle("/api/v1/health",
 		sharedUtils.PanicRecoveryMiddleware(http.HandlerFunc(r.portalHandler.HealthCheck)))
+
+	// OIDC token exchange for SLUDI / eSignet login (public)
+	mux.Handle("POST /api/v1/auth/token",
+		sharedUtils.PanicRecoveryMiddleware(http.HandlerFunc(r.authHandler.ExchangeToken)))
 
 	// Consent endpoints (authentication required)
 	mux.Handle("GET /api/v1/consents/{consentId}",

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useAuth } from "react-oidc-context";
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSludiAuth } from './SludiAuthContext';
 import { ConsentStatus } from "../constants/consentStatus";
 import { PortalAction } from "../constants/portalAction";
 import type { ConsentRecord } from "../types";
@@ -30,7 +30,7 @@ export const useConsent = () => {
 export const ConsentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const auth = useAuth();
+  const auth = useSludiAuth();
 
   const [consentRecord, setConsentRecord] = useState<ConsentRecord | null>(null);
   const [error, setError] = useState('');
@@ -188,7 +188,7 @@ export const ConsentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const signIn = () => {
-    auth.signinRedirect();
+    void auth.signIn();
   };
 
   return (

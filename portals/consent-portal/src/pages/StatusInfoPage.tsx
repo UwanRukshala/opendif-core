@@ -1,13 +1,13 @@
 import { AlertCircle, CheckCircle, Shield, X } from 'lucide-react';
 import React from 'react';
-import { useAuth } from "react-oidc-context";
+import { useSludiAuth } from '../contexts/SludiAuthContext';
 import UserHeader from '../components/UserHeader';
 import { useConsent } from '../contexts/ConsentContext';
 
 const StatusInfoPage: React.FC = () => {
   const { consentRecord } = useConsent();
 
-  const auth = useAuth();
+  const auth = useSludiAuth();
   const user = auth.user?.profile;
   const userName = user?.given_name || user?.name || user?.email || user?.preferred_username || user?.sub || null;
 
@@ -93,7 +93,7 @@ const StatusInfoPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${statusInfo.bgColor} flex items-center justify-center p-4 relative`}>
-      {auth.isAuthenticated && <UserHeader userName={userName} onSignIn={() => auth.signinRedirect()} onSignOut={() => auth.signoutRedirect()} />}
+      {auth.isAuthenticated && <UserHeader userName={userName} onSignIn={() => void auth.signIn()} onSignOut={auth.signOut} />}
       <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="bg-indigo-600 text-white p-6">
           <div className="flex items-center">

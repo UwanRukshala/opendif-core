@@ -77,6 +77,24 @@ func main() {
 	v1InternalHandler := v1handlers.NewInternalHandler(v1ConsentService)
 	v1PortalHandler := v1handlers.NewPortalHandler(v1ConsentService)
 
+	var tokenExchanger *v1auth.TokenExchanger
+	if cfg.IDPConfig.PrivateKeyPEM != "" && cfg.IDPConfig.TokenEndpoint != "" {
+		var err error
+		tokenExchanger, err = v1auth.NewTokenExchanger(v1auth.TokenExchangeConfig{
+			ClientID:      cfg.IDPConfig.ClientID,
+			TokenEndpoint: cfg.IDPConfig.TokenEndpoint,
+			PrivateKeyPEM: cfg.IDPConfig.PrivateKeyPEM,
+		})
+		if err != nil {
+			slog.Error("Failed to initialize SLUDI token exchanger", "error", err)
+			os.Exit(1)
+		}
+		slog.Info("SLUDI token exchange enabled", "token_endpoint", cfg.IDPConfig.TokenEndpoint)
+	} else {
+		slog.Warn("SLUDI token exchange disabled; set IDP_PRIVATE_KEY and IDP_TOKEN_ENDPOINT to enable login")
+	}
+	v1AuthHandler := v1handlers.NewAuthHandler(tokenExchanger)
+
 	slog.Info("JWT verifier configuration",
 		"client_id", cfg.IDPConfig.ClientID,
 		"issuer", cfg.IDPConfig.Issuer,
@@ -97,7 +115,7 @@ func main() {
 	}
 
 	// Initialize V1 router and register all V1 routes
-	v1Router := v1router.NewV1Router(cfg.Service.AllowedOrigins, v1InternalHandler, v1PortalHandler, v1JWTVerifier)
+	v1Router := v1router.NewV1Router(cfg.Service.AllowedOrigins, v1InternalHandler, v1PortalHandler, v1AuthHandler, v1JWTVerifier)
 	mux := http.NewServeMux()
 
 	slog.Info("Registering V1 API routes")

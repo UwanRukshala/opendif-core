@@ -1,20 +1,21 @@
-import { LogIn, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import React from 'react';
-import { useAuth } from 'react-oidc-context';
+import SludiSignInButton from '../components/SludiSignInButton';
 import UserHeader from '../components/UserHeader';
 import { PortalAction } from '../constants/portalAction';
 import { useConsent } from '../contexts/ConsentContext';
+import { useSludiAuth } from '../contexts/SludiAuthContext';
 
 const ConsentPage: React.FC = () => {
   const { consentRecord, isSubmitting, handleConsentDecision, isFetchingConsent, signIn, consentId } = useConsent();
-  const { isAuthenticated, isLoading: isAuthLoading, user, signinRedirect, signoutRedirect } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, user, signOut, error: authError } = useSludiAuth();
   const userName = user?.profile?.given_name || user?.profile?.name || user?.profile?.email || user?.profile?.preferred_username || user?.profile?.sub || null;
 
   // 1. Loading State
   if (isAuthLoading || isFetchingConsent) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center relative">
-        {isAuthenticated && <UserHeader userName={userName} onSignIn={() => signinRedirect()} onSignOut={() => signoutRedirect()} />}
+        {isAuthenticated && <UserHeader userName={userName} onSignIn={() => void signIn()} onSignOut={signOut} />}
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading consent details...</p>
@@ -34,15 +35,12 @@ const ConsentPage: React.FC = () => {
           </div>
           <div className="p-8 text-center">
             <p className="text-gray-600 mb-6">
-              You need to sign in to review this consent request.
+              Sign in with SLUDI to review this consent request.
             </p>
-            <button
-              onClick={() => signIn()}
-              className="flex w-full items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg transition-colors"
-            >
-              <LogIn className="mr-2 h-5 w-5" />
-              Sign In
-            </button>
+            {authError && (
+              <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{authError}</p>
+            )}
+            <SludiSignInButton onClick={() => signIn()} />
           </div>
         </div>
       </div>
@@ -55,7 +53,7 @@ const ConsentPage: React.FC = () => {
   if (!consentRecord) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        {isAuthenticated && <UserHeader userName={userName} onSignIn={() => signinRedirect()} onSignOut={() => signoutRedirect()} />}
+        {isAuthenticated && <UserHeader userName={userName} onSignIn={() => void signIn()} onSignOut={signOut} />}
         <div className="bg-white p-8 rounded-lg shadow text-center text-gray-600">
           {consentId ? 'Unable to load consent record.' : 'No consent request ID found.'}
         </div>
@@ -84,7 +82,7 @@ const ConsentPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 relative">
-      <UserHeader userName={userName} onSignIn={() => signinRedirect()} onSignOut={() => signoutRedirect()} />
+      <UserHeader userName={userName} onSignIn={() => signIn()} onSignOut={signOut} />
       <div className="max-w-2xl mx-auto py-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="bg-indigo-600 text-white p-6">
