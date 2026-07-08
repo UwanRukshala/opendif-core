@@ -61,7 +61,15 @@ func (r *V1Router) registerPortalRoutes(mux *http.ServeMux) {
 	mux.Handle("/api/v1/health",
 		sharedUtils.PanicRecoveryMiddleware(http.HandlerFunc(r.portalHandler.HealthCheck)))
 
-	// OIDC token exchange for SLUDI / eSignet login (public)
+	// OIDC login redirect and callback for SLUDI / eSignet (public)
+	mux.Handle("GET /api/v1/auth/login",
+		sharedUtils.PanicRecoveryMiddleware(http.HandlerFunc(r.authHandler.Login)))
+	mux.Handle("GET /api/v1/auth/callback",
+		sharedUtils.PanicRecoveryMiddleware(http.HandlerFunc(r.authHandler.Callback)))
+	mux.Handle("GET /api/v1/auth/session",
+		sharedUtils.PanicRecoveryMiddleware(http.HandlerFunc(r.authHandler.FetchSession)))
+
+	// OIDC token exchange for SLUDI / eSignet login (public, legacy direct exchange)
 	mux.Handle("POST /api/v1/auth/token",
 		sharedUtils.PanicRecoveryMiddleware(http.HandlerFunc(r.authHandler.ExchangeToken)))
 

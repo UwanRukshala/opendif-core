@@ -1,0 +1,30 @@
+# Local Postgres for consent-engine development.
+# Uses port 5434 so it does not conflict with a system Postgres on 5432.
+#
+# Usage (from this directory):
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Then set in .env:
+#   DB_HOST=localhost
+#   DB_PORT=5434
+#   DB_USERNAME=postgres
+#   DB_PASSWORD=password
+#   DB_NAME=consent_engine
+#   DB_SSLMODE=disable
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: consent-engine-postgres-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: consent_engine
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d consent_engine"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped

@@ -9,6 +9,7 @@ import (
 	"github.com/OpenDIF/opendif-core/exchange/shared/monitoring"
 	"github.com/OpenDIF/opendif-core/exchange/shared/utils"
 	"github.com/gov-dx-sandbox/exchange/consent-engine/internal/config"
+	"github.com/joho/godotenv"
 
 	// V1 API imports
 	v1auth "github.com/gov-dx-sandbox/exchange/consent-engine/v1/auth"
@@ -26,6 +27,8 @@ var (
 )
 
 func main() {
+	_ = godotenv.Load()
+
 	// Load configuration using flags
 	cfg := config.LoadConfig("consent-engine")
 
@@ -89,11 +92,25 @@ func main() {
 			slog.Error("Failed to initialize SLUDI token exchanger", "error", err)
 			os.Exit(1)
 		}
-		slog.Info("SLUDI token exchange enabled", "token_endpoint", cfg.IDPConfig.TokenEndpoint)
+		slog.Info("SLUDI token exchange enabled",
+			"token_endpoint", cfg.IDPConfig.TokenEndpoint,
+			"callback_url", cfg.IDPConfig.CallbackURL)
 	} else {
 		slog.Warn("SLUDI token exchange disabled; set IDP_PRIVATE_KEY and IDP_TOKEN_ENDPOINT to enable login")
 	}
-	v1AuthHandler := v1handlers.NewAuthHandler(tokenExchanger)
+
+	loginStateStore := v1auth.NewLoginStateStore()
+	tokenSessionStore := v1auth.NewTokenSessionStore()
+	v1AuthHandler := v1handlers.NewAuthHandler(v1handlers.AuthHandlerConfig{
+		ClientID:          cfg.IDPConfig.ClientID,
+		Scope:             cfg.IDPConfig.Scope,
+		EsignetBaseURL:    cfg.IDPConfig.EsignetBaseURL,
+		CallbackURL:       cfg.IDPConfig.CallbackURL,
+		ConsentPortalURL:  cfg.ConsentPortalUrl,
+		TokenExchanger:    tokenExchanger,
+		LoginStateStore:   loginStateStore,
+		TokenSessionStore: tokenSessionStore,
+	})
 
 	slog.Info("JWT verifier configuration",
 		"client_id", cfg.IDPConfig.ClientID,
